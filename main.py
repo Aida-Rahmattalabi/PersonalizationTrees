@@ -193,14 +193,14 @@ def main_synthetic():
 	n = 5000
 	m = 2
 	doMatching = False
-	treeNum = 200
+	treeNum = 50
 	res = syntheticObservationalData(d, m, n, [])
 
 	Train = res[0]
 	Test = res[1]
 
-	max_depth = 5
-	min_leaf_number = 0
+	max_depth = 10
+	min_leaf_number = 20
 	# create the personalization tree
 	pt = util.personalizationTree(Train, Test, max_depth, min_leaf_number, doMatching)
 
