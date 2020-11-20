@@ -53,9 +53,10 @@ class personalizationTree():
 
 			T = node.data[:,-1]
 			Y = node.data[:,-2]
-
+			#print('x, T: ', x, T)
 			for t in range(self.m):
 				ind = [i for i, x in enumerate(T) if x == t]
+				#print('ind: ', ind)
 				if(len(ind) != 0):
 					tmp = [Y[i]/len(ind) for i in ind]
 
@@ -63,6 +64,7 @@ class personalizationTree():
 				else:
 					res.append(math.inf)
 
+			#print('action: ', np.argmin(res), res)		
 			return np.argmin(res)
 		else:
 			j = node.j
@@ -78,19 +80,19 @@ class personalizationTree():
 	
 	#-----------------------------------------------------------------------------------------------
 	def subroutine(self, S, cur_depth, node):
-		# count the number of data points in the data 
+		# count the number of data points for each treatment
 		res = []
-		T = S[0:len(S), -1]
+		T = S[0:len(S), -1]          
 
 		for t in range(self.m):
 			ind = [i for (i, x) in enumerate(T) if x == t]
 			res.append(len(ind))
 
 		if(cur_depth < self.max_depth and min(res) > self.min_leaf_number):
-			IStar = math.inf													# line 4
-			lStar = 0															# line 4
-			jStar = 0															# line 4
-			cuts = list(np.random.randint(0, self.d, self.candidateCuts))		# line 5
+			IStar = math.inf													# line 4 of the pseudo code
+			lStar = 0															# line 4 of the pseudo code
+			jStar = 0															# line 4 of the pseudo code
+			cuts = [0 for c in range(self.d)]#list(np.random.randint(0, self.d, self.candidateCuts))		# line 5 of the pseudo code
 			for l in cuts:  # feature 
 				# sort X along l-th feature 
 				S = sorted(S, key=lambda axis:axis[l], reverse=False)
@@ -122,17 +124,17 @@ class personalizationTree():
 					k_mL[t] += 1
 					k_mR[t] -= 1
 
-					S_mL[t] += Y[t]
-					S_mR[t] -= Y[t]
+					S_mL[t] += Y[j]
+					S_mR[t] -= Y[j]
 
 					if(0 in k_mL and 0 not in k_mR):
-						I = k_R*min([S_mR[i]/k_mR[i] for i in range(self.m)])
+						I = math.inf #k_R*min([S_mR[i]/k_mR[i] for i in range(self.m)])
 
 					elif(0 in k_mR and 0 not in k_mL):
-						I = k_L*min([S_mL[i]/k_mL[i] for i in range(self.m)])
+						I = math.inf #k_L*min([S_mL[i]/k_mL[i] for i in range(self.m)])
 					
 					elif(0 in k_mR and 0 in k_mL):
-						I = IStar
+						I = math.inf
 
 					else:
 						I = k_L*min([S_mL[i]/k_mL[i] for i in range(self.m)]) + k_R*min([S_mR[i]/k_mR[i] for i in range(self.m)])
@@ -148,6 +150,7 @@ class personalizationTree():
 			if IStar < math.inf:
 				S = sorted(S, key=lambda axis:axis[lStar], reverse=False)
 				S = np.array(S)
+				X = S[0:len(S),0:len(S[0])-2]
 
 				S_L = S[0:jStar+1, 0:len(S[0])]
 				S_R = S[jStar+1:len(S), 0:len(S[0])]
