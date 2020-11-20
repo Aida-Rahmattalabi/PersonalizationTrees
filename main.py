@@ -11,38 +11,9 @@ import time
 import math
 
 import util
-#---------------------------------------------------------------------------------------------------	
-def generate_data_guassian(d, n, m):
-	from sklearn.datasets import make_gaussian_quantiles
-	# d is the number of covariates 
-	# n in the size of the dataset -- the number of data points
-	# c is the number of classes
-	X, Y = make_gaussian_quantiles(cov=4.,
-								n_samples=n, n_features=d,
-								n_classes=m, random_state=1)
 
 
-	X = pd.DataFrame(X,columns=['x'+str(i) for i in range(d)])
-	Y0 = pd.Series(Y)
-
-	return X, Y0
-#---------------------------------------------------------------------------------------------------	
-def generate_complex_data(d, n, m):
-	from sklearn.datasets import make_classification
-	# d is the number of covariates 
-	# n in the size of the dataset -- the number of data points
-	# c is the number of classes
-	X,Y = make_classification(n_samples=n, n_features=d, n_informative=2, 
-								n_redundant=0, n_repeated=0, n_classes=m, 
-								n_clusters_per_class=1,class_sep=2,flip_y=0.2, 
-								weights=[0.5,0.5], random_state=17)
-
-
-	X = pd.DataFrame(X,columns=['x'+str(i) for i in range(d)])
-	Y0 = pd.Series(Y)
-
-	return [X, Y0]
-#---------------------------------------------------------------------------------------------------	
+#---------------------------------------------------------------------------------------------------
 def readData(address, file_name):
 	pass
 #---------------------------------------------------------------------------------------------------
@@ -190,7 +161,7 @@ def baseline(Train, Test, methods):
 #---------------------------------------------------------------------------------------------------	
 def main_synthetic():
 	d = 10
-	n = 5000
+	n = 4
 	m = 2
 	doMatching = False
 	treeNum = 50
@@ -199,8 +170,8 @@ def main_synthetic():
 	Train = res[0]
 	Test = res[1]
 
-	max_depth = 10
-	min_leaf_number = 20
+	max_depth = 2
+	min_leaf_number = 0
 	# create the personalization tree
 	pt = util.personalizationTree(Train, Test, max_depth, min_leaf_number, doMatching)
 
@@ -217,25 +188,7 @@ def main_synthetic():
 
 	value_base = baseline(Train, Test, ['RC-RF', 'RC-LinReg'])
 	print('Random Forest value: ', value_base)
-#---------------------------------------------------------------------------------------------------	
-def main_real():
-	d = 10
-	n = 10
-	m = 2
-	doMatching = True
-	
-	S = readDate()
 
-	max_depth = 3
-	min_leaf_number = 0
-	# create the personalization tree
-	pt = tree.personalizationTree(S, [], max_depth, min_leaf_number, doMatching)
-
-	print('the personalization tree is: ')
-	printInorder(pt.root)
-
-	value = pt.policyEvaluation(pt.policy)
-	print('value: ', value)
 #---------------------------------------------------------------------------------------------------	
 if __name__ == "__main__":
 	main_synthetic()
