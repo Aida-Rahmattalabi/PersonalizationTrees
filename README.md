@@ -4,4 +4,5 @@ This project reproduces the paper "Recursive Partitioning for Personalization us
 
 The repository consists of two files: 
 
-util.py
+<b> util.py </b> includes two classes: personlizationTree and personalizationForest. 
+
