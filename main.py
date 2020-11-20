@@ -15,7 +15,7 @@ import util
 def readData(address, file_name):
 	pass
 #---------------------------------------------------------------------------------------------------
-def syntheticObservationalData(d, m, n, logPolicy): 
+def syntheticObservationalData(d, m, n): 
 	# this function generates synthetic data as described in the paper "optimal rescriptive trees"
 	# it takes as input d: dimention of the covariate vector, m: the number of treatments, ...
 	# n: the sample size, logPolicy is the offline policy that generated the observational data
@@ -123,7 +123,6 @@ def baseline(Train, Test, methods):
 					RC = RCModels[j]
 
 					x = Test[i, 0:len(Train[0])-2]
-					y = Test[i,-2]
 					yhat[j] = RC.predict(x.reshape(1,-1))
 
 				p = np.argmin([yhat])
@@ -148,11 +147,27 @@ def baseline(Train, Test, methods):
 					RC = RCModels[j]
 
 					x = Test[i, 0:len(Train[0])-2]
-					y = Test[i,-2]
 					yhat[j] = RC.predict(x.reshape(1,-1))
 
 				p = np.argmin([yhat])
 				value[a] += Test[i, len(x) + p]/len(Test)
+
+		if(methods[a] == 'CF'):
+			X = Train[:, 0:len(Train[0])-2]
+			Y = Train[:, -2]
+			T = Train[:, -1]
+
+			pd.DataFrame(X).to_csv("/Users/aida/Dropbox/PhD/Courses/Data-Driven Optimization-Vishal/Project/Data/synthetic/XTrain.csv")
+			pd.DataFrame(Y).to_csv("/Users/aida/Dropbox/PhD/Courses/Data-Driven Optimization-Vishal/Project/Data/synthetic/YTrain.csv")
+			pd.DataFrame(T).to_csv("/Users/aida/Dropbox/PhD/Courses/Data-Driven Optimization-Vishal/Project/Data/synthetic/TTrain.csv")
+			
+			X = Test[:, 0:len(Train[0])-2]
+			Y = Test[:, -2]
+			T = Test[:, -1]
+
+			pd.DataFrame(X).to_csv("/Users/aida/Dropbox/PhD/Courses/Data-Driven Optimization-Vishal/Project/Data/synthetic/XTrain.csv")
+			pd.DataFrame(Y).to_csv("/Users/aida/Dropbox/PhD/Courses/Data-Driven Optimization-Vishal/Project/Data/synthetic/YTrain.csv")
+			pd.DataFrame(T).to_csv("/Users/aida/Dropbox/PhD/Courses/Data-Driven Optimization-Vishal/Project/Data/synthetic/TTrain.csv")
 
 
 	return value
@@ -163,7 +178,7 @@ def main_synthetic():
 	m = 2
 	doMatching = False
 	treeNum = 50
-	res = syntheticObservationalData(d, m, n, [])
+	res = syntheticObservationalData(d, m, n)
 
 	Train = res[0]
 	Test = res[1]
@@ -184,7 +199,7 @@ def main_synthetic():
 	value = pf.policyEvaluation()
 	print('Personalization Forest value: ', value)
 
-	value_base = baseline(Train, Test, ['RC-RF', 'RC-LinReg'])
+	value_base = baseline(Train, Test, ['CF']) #['RC-RF', 'RC-LinReg']
 	print('Random Forest value: ', value_base)
 #---------------------------------------------------------------------------------------------------	
 def main_real():
