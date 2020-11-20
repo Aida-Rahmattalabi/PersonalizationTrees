@@ -7,7 +7,7 @@ USC Stevens Institute for Innovation\
 University of Southern California\
 1150 S. Olive Street, Suite 2300\
 Los Angeles, CA 90115, USA\
-ATTN: Accounting\
+ATTN: Accounting
 
 DISCLAIMER. USC MAKES NO EXPRESS OR IMPLIED WARRANTIES, EITHER IN FACT OR BY
 OPERATION OF LAW, BY STATUTE OR OTHERWISE, AND USC SPECIFICALLY AND EXPRESSLY
@@ -27,11 +27,11 @@ INCURRING SUCH DAMAGES IN ADVANCE.
 For commercial license pricing and annual commercial update and support pricing, please
 contact:
 
-Rakesh Pandit USC Stevens Institute for Innovation\ 
-University of Southern California\ 
+Rakesh Pandit USC Stevens Institute for Innovation\
+University of Southern California\
 1150 S. Olive Street, Suite 2300\
-Los Angeles, CA 90115, USA\ 
+Los Angeles, CA 90115, USA\
 
 Tel: +1 213-821-3552\
 Fax: +1 213-821-5001\
-Email: rakeshvp@usc.edu and ccto: accounting@stevens.usc.edu\
+Email: rakeshvp@usc.edu and ccto: accounting@stevens.usc.edu
