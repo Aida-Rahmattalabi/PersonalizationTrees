@@ -5,7 +5,7 @@ This project reproduces the paper "Recursive Partitioning for Personalization us
 ## Citation and the Original Paper
 Kallus, N. (2017, July). Recursive partitioning for personalization using observational data. In International Conference on Machine Learning (pp. 1789-1798). PMLR.
 
-The paper can be found at \href{https://arxiv.org/pdf/1608.08925.pdf}
+The paper can be found at [https://arxiv.org/pdf/1608.08925.pdf]
 
 ## Description
 The repository consists of two files: 
