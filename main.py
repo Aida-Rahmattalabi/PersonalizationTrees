@@ -22,7 +22,6 @@ def syntheticObservationalData(d, m, n, logPolicy):
 	# it takes as input d: dimention of the covariate vector, m: the number of treatments, ...
 	# n: the sample size, logPolicy is the offline policy that generated the observational data
 	
-	# np.random.seed(1)
 	X = np.array([[0.0 for i in range(d)] for j in range(n)], dtype = object)
 	for i in range(n):
 		for j in range(d):
@@ -34,35 +33,17 @@ def syntheticObservationalData(d, m, n, logPolicy):
 	#print('X: ', X)
 
 	# define functions used for the outcome variable 
-	def baseline1(x):
-		return x[0] + x[2] + x[4] + x[6] + x[7] + x[8] - 2
+	def baseline0(x):
+		return x[0] - x[1]**2# + x[2]
 
-	def effect1(x):
-		if(x[0] > 0.5):
-			return 5
-		else:
-			return -5
-
-	def baseline2(x):
-		return 0
-
-	def effect2(x):
-		if(x[0] > 1 and x[2] > 0 and x[4] > 1 and x[6] > 0):
-			
-			return 8 + 2*x[7]*x[8]
-		if((x[0] <= 1 or x[2] <= 0) and (x[4] <= 1 or x[6] <= 0)):
-
-			return 2*x[7]*x[8]
-		if(((x[0] <= 1 or x[2] <= 0) and (x[4] > 1 and x[6] > 0)) or ((x[0] > 1 and x[2] > 0) 
-			and (x[4] <= 1 or x[6] <= 0))):
-
-			return 4 + 2*x[7]*x[8]
+	def effect0(x):
+		return -abs(x[3])# + x[2]
 
 	Y = np.array([[0.0 for i in range(m)] for j in range(n)], dtype = object)
 
 	for j in range(n):
-		Y[j][0] = baseline1(X[j]) + 0.5*effect1(X[j])
-		Y[j][1] = baseline1(X[j]) - 0.5*effect1(X[j])
+		Y[j][0] = baseline0(X[j])
+		Y[j][1] = effect0(X[j])
 
 	#print('Y: ', Y)
 
@@ -84,8 +65,8 @@ def syntheticObservationalData(d, m, n, logPolicy):
 	# split train and test data
 	r = np.random.rand(S.shape[0])
 
-	Train = S[r<0.9, :]
-	Test = SFull[r>=0.9, :]
+	Train = S#[r<1, :]
+	Test = SFull#[r>=0.5, :]
 
 	return [Train, Test]
 #---------------------------------------------------------------------------------------------------	
@@ -95,7 +76,7 @@ def printInorder(root):
         printInorder(root.childLeft) 
   
         # then print the data of node 
-        print('(feature, value): ', root.theta, root.j)
+        print('(feature, value): ', root.theta, root.j, root.data)
   
         # now recur on right child 
         printInorder(root.childRight)
@@ -160,18 +141,22 @@ def baseline(Train, Test, methods):
 	return value
 #---------------------------------------------------------------------------------------------------	
 def main_synthetic():
-	d = 10
-	n = 4
+	d = 4
+	n = 500
 	m = 2
 	doMatching = False
 	treeNum = 50
 	res = syntheticObservationalData(d, m, n, [])
-
+	
 	Train = res[0]
 	Test = res[1]
 
+	#Train = np.array([[1.72,-1, 1], [1.39, 0, 0], [-1.02, 0.0,  0], [0.18, 0.0 , 0]], dtype = object)
+	#Test = np.array([[1.72 ,0 ,-1, 1], [1.39, 0, -1, 0], [-1.02,0 ,-1 ,0], [0.18, 0 ,-1, 0]], dtype = object)
+
 	max_depth = 2
 	min_leaf_number = 0
+	
 	# create the personalization tree
 	pt = util.personalizationTree(Train, Test, max_depth, min_leaf_number, doMatching)
 
@@ -181,16 +166,20 @@ def main_synthetic():
 	value = pt.policyEvaluation()
 	print('Personalization Tree value: ', value)
 
-
 	pf = util.personalizationForest(Train, Test, max_depth, min_leaf_number, treeNum, doMatching)
 	value = pf.policyEvaluation()
 	print('Personalization Forest value: ', value)
 
 	value_base = baseline(Train, Test, ['RC-RF', 'RC-LinReg'])
 	print('Random Forest value: ', value_base)
-
+	
 #---------------------------------------------------------------------------------------------------	
 if __name__ == "__main__":
-	main_synthetic()
+	for i in range(20):
+		print('trial #', i)
+		e = main_synthetic()
+		#if(e == 0):
+		#	print('PROGRAM ENDED')
+		#	break
 
 
