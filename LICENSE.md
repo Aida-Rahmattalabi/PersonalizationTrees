@@ -2,11 +2,12 @@ The Software is made available for academic or non-commercial purposes only. The
 a copy of the program for an unlimited term. Individuals requesting a license for commercial use
 must pay for a commercial license.
 
-USC Stevens Institute for Innovation
-University of Southern California
-1150 S. Olive Street, Suite 2300
-Los Angeles, CA 90115, USA
-ATTN: Accounting
+
+USC Stevens Institute for Innovation\
+University of Southern California\
+1150 S. Olive Street, Suite 2300\
+Los Angeles, CA 90115, USA\
+ATTN: Accounting\
 
 DISCLAIMER. USC MAKES NO EXPRESS OR IMPLIED WARRANTIES, EITHER IN FACT OR BY
 OPERATION OF LAW, BY STATUTE OR OTHERWISE, AND USC SPECIFICALLY AND EXPRESSLY
@@ -26,11 +27,11 @@ INCURRING SUCH DAMAGES IN ADVANCE.
 For commercial license pricing and annual commercial update and support pricing, please
 contact:
 
-  Rakesh Pandit USC Stevens Institute for Innovation 
-  University of Southern California 
-  1150 S. Olive Street, Suite 2300
-  Los Angeles, CA 90115, USA 
+Rakesh Pandit USC Stevens Institute for Innovation\ 
+University of Southern California\ 
+1150 S. Olive Street, Suite 2300\
+Los Angeles, CA 90115, USA\ 
 
-  Tel: +1 213-821-3552
-  Fax: +1 213-821-5001 
-  Email: rakeshvp@usc.edu and ccto: accounting@stevens.usc.edu
+Tel: +1 213-821-3552\
+Fax: +1 213-821-5001\
+Email: rakeshvp@usc.edu and ccto: accounting@stevens.usc.edu\
