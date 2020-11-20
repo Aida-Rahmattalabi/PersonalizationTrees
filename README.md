@@ -14,6 +14,6 @@ The repository consists of two files:
   <li><b>doMatching (datatype = Boolean)</b>: a flag that, when set to True, signals the personalization tree to use the greedy-submatching (see Section 3 in the paper) to estimate the potential outcomes. Else, the use should provide the potential outcomes in Test. </li>
 </ol>
 
-<b> personlizationForest </b> takes <b>treeNum</b> which is the number of trees in addition to the above inputs. 
+<b> personlizationForest </b> takes <b>treeNum (datatype = int)</b> which is the number of trees in addition to the above inputs. 
 
 
