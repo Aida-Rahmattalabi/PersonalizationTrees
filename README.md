@@ -1,9 +1,13 @@
 # PersonalizationTree/Forest
+This project reproduces the paper "Recursive Partitioning for Personalization using Observational Data". 
 
-This project reproduces the paper "Recursive Partitioning for Personalization using Observational Data". It implements the personalization trees (see Algorithm 1 in the paper) and personalization forest (see Algorithm 2). 
 
+## Citation
+Kallus, N. (2017, July). Recursive partitioning for personalization using observational data. In International Conference on Machine Learning (pp. 1789-1798). PMLR.
+
+## Description
 The repository consists of two files: 
-<b> util.py </b> includes two classes: 1) personlizationTree and 2) personalizationForest. 
+<b> util.py </b> includes two classes: it implements the personalization trees (see Algorithm 1 in the paper) and personalization forest (see Algorithm 2). 
 
 <b> personlizationTree </b> takes 5 inputs. 
 <ol>
