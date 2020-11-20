@@ -31,7 +31,6 @@ Rakesh Pandit USC Stevens Institute for Innovation\
 University of Southern California\
 1150 S. Olive Street, Suite 2300\
 Los Angeles, CA 90115, USA\
-
 Tel: +1 213-821-3552\
 Fax: +1 213-821-5001\
 Email: rakeshvp@usc.edu and ccto: accounting@stevens.usc.edu
