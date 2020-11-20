@@ -78,7 +78,7 @@ class personalizationTree():
 	
 	#-----------------------------------------------------------------------------------------------
 	def subroutine(self, S, cur_depth, node):
-		# count the number of data points in the data 
+		# count the number of data points for each treatment bucket
 		res = []
 		T = S[0:len(S), -1]
 
