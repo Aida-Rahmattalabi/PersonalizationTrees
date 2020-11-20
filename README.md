@@ -1,4 +1,4 @@
-# PersonalizationTrees
+# PersonalizationTree/Forest
 
 This project reproduces the paper "Recursive Partitioning for Personalization using Observational Data". It implements the personalization trees (see Algorithm 1 in the paper) and personalization forest (see Algorithm 2). 
 
