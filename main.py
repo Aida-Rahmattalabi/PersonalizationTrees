@@ -2,6 +2,7 @@ import pandas as pd
 from scipy.stats import bernoulli
 from scipy.stats import norm
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score,mean_squared_error
 import seaborn as sns
 import random 
@@ -9,7 +10,7 @@ import numpy as np
 import time
 import math
 
-import tree
+import util
 #---------------------------------------------------------------------------------------------------	
 def generate_data_guassian(d, n, m):
 	from sklearn.datasets import make_gaussian_quantiles
@@ -66,8 +67,8 @@ def syntheticObservationalData(d, m, n, logPolicy):
 		return x[0] + x[2] + x[4] + x[6] + x[7] + x[8] - 2
 
 	def effect1(x):
-		if(x[0] > 1):
-			return 0
+		if(x[0] > 0.5):
+			return 5
 		else:
 			return -5
 
@@ -78,14 +79,12 @@ def syntheticObservationalData(d, m, n, logPolicy):
 		if(x[0] > 1 and x[2] > 0 and x[4] > 1 and x[6] > 0):
 			
 			return 8 + 2*x[7]*x[8]
-
 		if((x[0] <= 1 or x[2] <= 0) and (x[4] <= 1 or x[6] <= 0)):
-			
-			return 2*x[7]*x[8]
 
+			return 2*x[7]*x[8]
 		if(((x[0] <= 1 or x[2] <= 0) and (x[4] > 1 and x[6] > 0)) or ((x[0] > 1 and x[2] > 0) 
 			and (x[4] <= 1 or x[6] <= 0))):
-			
+
 			return 4 + 2*x[7]*x[8]
 
 	Y = np.array([[0.0 for i in range(m)] for j in range(n)], dtype = object)
@@ -130,37 +129,13 @@ def printInorder(root):
         # now recur on right child 
         printInorder(root.childRight)
 #---------------------------------------------------------------------------------------------------	
-def main_synthetic():
-	d = 10
-	n = 500
-	m = 2
-	doMatching = False
-	res = syntheticObservationalData(d, m, n, [])
-
-	Train = res[0]
-	Test = res[1]
-
-	max_depth = 5
-	min_leaf_number = 0
-	# create the personalization tree
-	pt = tree.personalizationTree(Train, Test, max_depth, min_leaf_number, doMatching)
-
-	print('the personalization tree is: ')
-	printInorder(pt.root)
-
-	value = pt.policyEvaluation(pt.policy)
-	print('Personalization Tree value: ', value)
-
-	value_base = baseline(Train, Test, ['RC'])
-	print('Random Forest value: ', value_base)
-#---------------------------------------------------------------------------------------------------	
 def baseline(Train, Test, methods):
 	T = set(Train[:,-1])
 	m = len(T)
 
 	value = [0 for a in methods]
 	for a in range(len(methods)):
-		if(methods[a] == 'RC'): # regression and compare
+		if(methods[a] == 'RC-RF'): # regression and compare
 			# random forest
 			RCModels = []
 			for i in range(m):
@@ -184,12 +159,64 @@ def baseline(Train, Test, methods):
 
 				p = np.argmin([yhat])
 				value[a] += Test[i, len(x) + p]/len(Test)
+		
+		if(methods[a] == 'RC-LinReg'): # regression and compare
+			# random forest
+			RCModels = []
+			for i in range(m):
+				X = Train[Train[:,-1] == i, 0:len(Train[0])-2]
+				Y = Train[Train[:,-1] == i, -2]
 
-		if(a == 'CF'): # causal forest
-			pass
+				RC = LinearRegression()
+				RC.fit(X, Y)
+
+				RCModels.append(RC)
+
+			for i in range(len(Test)):
+				yhat = [0 for i in range(m)]
+
+				for j in range(m):
+					RC = RCModels[j]
+
+					x = Test[i, 0:len(Train[0])-2]
+					y = Test[i,-2]
+					yhat[j] = RC.predict(x.reshape(1,-1))
+
+				p = np.argmin([yhat])
+				value[a] += Test[i, len(x) + p]/len(Test)
 
 
 	return value
+#---------------------------------------------------------------------------------------------------	
+def main_synthetic():
+	d = 10
+	n = 5000
+	m = 2
+	doMatching = False
+	treeNum = 200
+	res = syntheticObservationalData(d, m, n, [])
+
+	Train = res[0]
+	Test = res[1]
+
+	max_depth = 5
+	min_leaf_number = 0
+	# create the personalization tree
+	pt = util.personalizationTree(Train, Test, max_depth, min_leaf_number, doMatching)
+
+	#print('the personalization tree is: ')
+	#printInorder(pt.root)
+
+	value = pt.policyEvaluation()
+	print('Personalization Tree value: ', value)
+
+
+	pf = util.personalizationForest(Train, Test, max_depth, min_leaf_number, treeNum, doMatching)
+	value = pf.policyEvaluation()
+	print('Personalization Forest value: ', value)
+
+	value_base = baseline(Train, Test, ['RC-RF', 'RC-LinReg'])
+	print('Random Forest value: ', value_base)
 #---------------------------------------------------------------------------------------------------	
 def main_real():
 	d = 10
@@ -210,7 +237,6 @@ def main_real():
 	value = pt.policyEvaluation(pt.policy)
 	print('value: ', value)
 #---------------------------------------------------------------------------------------------------	
-
 if __name__ == "__main__":
 	main_synthetic()
 

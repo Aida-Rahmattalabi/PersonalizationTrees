@@ -221,7 +221,7 @@ class personalizationTree():
 
 		return [Train, Test]
 	#-----------------------------------------------------------------------------------------------
-	def policyEvaluation(self, f):
+	def policyEvaluation(self):
 		# policy value
 		val = 0
 		for i in range(len(self.Test)):
@@ -230,11 +230,48 @@ class personalizationTree():
 			x = self.Test[i,0:self.d]
 			
 			# find the action proposed by policy f
-			p = f(x)
+			p = self.treeTraversal(self.root, x)
 
 			# evaluate the action
 			val += self.Test[i,self.d + p]
 
 		return val/len(self.Test)
-	#-----------------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------------
+class personalizationForest():
+	def __init__(self, Train, Test, max_depth, min_leaf_number, treeNum, doMatching):		
+		self.Train = Train
+		self.Test = Test
+		self.max_depth = max_depth
+		self.min_leaf_number = min_leaf_number
+		self.treeNum = treeNum
+		self.doMatching = doMatching
+
+	def policyEvaluation(self):
+		value = 0
+		treeModels = []
+
+		for i in range(self.treeNum):
+			# randomly sample training data
+			Train_s = self.Train[np.random.choice(self.Train.shape[0], len(self.Train), replace=True), :]
+			tree = personalizationTree(Train_s, self.Test, self.max_depth, self.min_leaf_number, self.doMatching)
+
+			treeModels.append(tree)
+
+		for j in range(len(self.Test)):
+			zhat = [0 for i in range(self.treeNum)]
+
+			for i in range(self.treeNum):
+				tree = treeModels[i]
+
+				x = self.Test[j, 0:len(self.Train[0])-2]
+				zhat[i] = tree.policy(x)
+
+			p = max(set(zhat), key=zhat.count)
+			value += self.Test[j, len(x) + p]/len(self.Test)
+
+
+
+		return value
 
