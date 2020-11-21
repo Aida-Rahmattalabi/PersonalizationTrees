@@ -2,66 +2,114 @@ rm(list=ls())
 
 library(tidyr)
 library(grf)
-library(mlr)
 
-n = 10
-d = 3
+n = 1000
+d = 10
 m = 2
-
-############# generate data #############  
-
-# X
-X = data.frame(matrix(nrow=n, ncol=0))
-
-for(i in seq(0, d-1))
+synthetic = TRUE
+val = c()
+#########################  generate data #########################  
+for(run in seq(0, 25, 1))
 {
-  if(i%%2 == 0)
-  { tmp = data.frame(matrix(rnorm(n, 0, 1), nrow=n)) }
-  else
-  { tmp = data.frame(matrix(rbinom(n, 1, 0.5), nrow=n)) }
-
-  X = cbind(X, tmp)
-}
-names(X)[1:d] <- paste("x", 1:d, sep="")
-
-
-# Y
-Y = data.frame(matrix(nrow=n, ncol=0))
-
-
-
-
-for(i in seq(0, m-1))
-{
-  if(i%%2 == 0)
-  { tmp = data.frame(matrix(rnorm(n, 0, 1), nrow=n)) }
-  else
-  { tmp = data.frame(matrix(rbinom(n, 1, 0.5), nrow=n)) }
+  if(synthetic)
+  {  
+    # X
+    X = data.frame(matrix(nrow=n, ncol=0))
+    
+    for(i in seq(0, d-1))
+    {
+      if(i%%2 == 0)
+      { tmp = data.frame(matrix(rnorm(n, 0, 1), nrow=n)) }
+      else
+      { tmp = data.frame(matrix(rbinom(n, 1, 0.5), nrow=n)) }
+    
+      X = cbind(X, tmp)
+    }
+    
+    names(X)[1:d] <- paste("x", 0:(d-1), sep="")
+    r = runif(n, min = 0, max = 1)
+    XTrain = X[r >= 0.1,]
+    XTest = X[r < 0.1,]
+    
+    # Y
+    Y = data.frame(matrix(nrow=n, ncol= m))
+    names(Y)[1:m] <- paste("y", 0:(m-1), sep="")
+    
+    baseline1 <- function(X) 
+    {
+      tmp = data.frame(matrix(nrow=nrow(X), ncol= 1))
+      tmp = X['x0'] + X['x2'] + X['x4'] + X['x6'] + X['x7'] + X['x8'] - 2
+      return(tmp)
+    }
+    
+    effect1 <- function(X) 
+    {
+      tmp = data.frame(matrix(nrow=nrow(X), ncol= 1))
+      index = with(X, X['x0'] > 0.5)
+      tmp[index] = 5
+      tmp[!index] = -5
+      
+      return(tmp)
+    }
+    
+    effect2 <- function(X) 
+    {
+      tmp = data.frame(matrix(nrow=nrow(X), ncol= 1))
+      
+      index = with(X, X['x0'] > 1 && X['x2'] > 0 && X['x4'] > 1 && X['x6'] > 0)  
+      a = 8 + 2*X['x7']*X['x8']
+      
+      tmp[index] = a[index]
+    
+      index = with(X, ((X['x0'] <= 1 || X['x2'] <= 0) && (X['x4'] <= 1 || X['x6'] <= 0)))
+      a = 2*X['x7']*X['x8']
+      
+      tmp[index] = a[index]
+      
+      index = with(X, ((X['x0'] <= 1 || X['x2'] <= 0) && (X['x4'] > 1 || X['x6'] > 0)) || ((X['x0'] > 1 || X['x2'] > 0) && (X['x4'] <= 1 || X['x6'] <= 0)) )
+      a = 4 + 2*X['x7']*X['x8']
+      
+      tmp[index] = a[index]
+      
+      return(tmp)
+    }
+    
+    for(i in seq(0, m-1))
+    {
+      if(i == 0)
+      { Y['y0'] = baseline1(X) + 0.5*effect1(X)}#apply(X, 1, baseline0) + 0.5*apply(X, 1, effect0)}
+      else
+      { Y['y1'] = baseline1(X) - 0.5*effect1(X)}#apply(X, 1, baseline0) - 0.5*apply(X, 1, effect0)}
+    }
+    YTrain = Y[r >= 0.1,]
+    YTest = Y[r < 0.1,]
+    
   
-  Y = cbind(Y, tmp)
-}
-names(Y)[1:d] <- paste("x", 1:d, sep="")
-
-
-# T
-W = data.frame(matrix(nrow=n, ncol=0))
-
-for(i in seq(0, m-1))
-{
-  if(i%%2 == 0)
-  { tmp = data.frame(matrix(rnorm(n, 0, 1), nrow=n)) }
-  else
-  { tmp = data.frame(matrix(rbinom(n, 1, 0.5), nrow=n)) }
+    
+    # T
+    p = c(exp(Y['y0'])/(1+exp(Y['y0'])))
+    W = matrix(rbinom(n, 1, p$y0), nrow=n, ncol=1)
+    WTrain = W[r >= 0.1,]
+    WTest = W[r < 0.1,]
+    
+  }
+  ######################## random split #######################
+  YObs <- matrix(NA, nrow = n, ncol = 1)
+  YObs[W==0] = Y[W==0,'y0']
+  YObs[W==1] = Y[W==1,'y1']
   
-  W = cbind(W, tmp)
+  YObsTrain = YObs[r >= 0.1,]
+  YObsTest = YObs[r < 0.1,]
+  ################# learn the causal forest #####################
+  tau.forest <- causal_forest(as.matrix(XTrain), as.vector(YObsTrain), as.vector(WTrain))
+  ########################### predict ############################
+  c.pred <- predict(tau.forest, XTest)
+  ######################### evaluate policy ######################
+  pValue = matrix(NA, nrow = nrow(XTest), ncol = 1)
+  pValue[c.pred >= 0] = YTest[c.pred >= 0,'y0']
+  pValue[c.pred < 0] = YTest[c.pred < 0,'y1']
+  c <- append(c, mean(pValue))
+  ################################################################   
 }
-names(W)[1:d] <- paste("x", 1:d, sep="")
-
-################## random split #################
-
-########### learn the causal forest #############
-tau.forest <- causal_forest(X, Y, W)
-############ ############ ############ ##########
-
-
+mean(c)
 
