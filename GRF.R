@@ -108,8 +108,8 @@ for(run in seq(0, 25, 1))
   pValue = matrix(NA, nrow = nrow(XTest), ncol = 1)
   pValue[c.pred >= 0] = YTest[c.pred >= 0,'y0']
   pValue[c.pred < 0] = YTest[c.pred < 0,'y1']
-  c <- append(c, mean(pValue))
+  val <- c(val, mean(pValue))
   ################################################################   
 }
-mean(c)
+mean(val)
 
