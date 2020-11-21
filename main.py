@@ -153,23 +153,7 @@ def baseline(Train, Test, methods):
 				value[a] += Test[i, len(x) + p]/len(Test)
 
 		if(methods[a] == 'CF'):
-			X = Train[:, 0:len(Train[0])-2]
-			Y = Train[:, -2]
-			T = Train[:, -1]
-
-			pd.DataFrame(X).to_csv("/Users/aida/Dropbox/PhD/Courses/Data-Driven Optimization-Vishal/Project/Data/synthetic/XTrain.csv")
-			pd.DataFrame(Y).to_csv("/Users/aida/Dropbox/PhD/Courses/Data-Driven Optimization-Vishal/Project/Data/synthetic/YTrain.csv")
-			pd.DataFrame(T).to_csv("/Users/aida/Dropbox/PhD/Courses/Data-Driven Optimization-Vishal/Project/Data/synthetic/TTrain.csv")
-			
-			X = Test[:, 0:len(Train[0])-2]
-			Y = Test[:, -2]
-			T = Test[:, -1]
-
-			pd.DataFrame(X).to_csv("/Users/aida/Dropbox/PhD/Courses/Data-Driven Optimization-Vishal/Project/Data/synthetic/XTrain.csv")
-			pd.DataFrame(Y).to_csv("/Users/aida/Dropbox/PhD/Courses/Data-Driven Optimization-Vishal/Project/Data/synthetic/YTrain.csv")
-			pd.DataFrame(T).to_csv("/Users/aida/Dropbox/PhD/Courses/Data-Driven Optimization-Vishal/Project/Data/synthetic/TTrain.csv")
-
-
+			pass
 	return value
 #---------------------------------------------------------------------------------------------------	
 def main_synthetic():
