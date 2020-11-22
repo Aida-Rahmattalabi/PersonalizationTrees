@@ -192,18 +192,24 @@ def main_real():
 	m = 2
 	doMatching = True
 	
-	S = readDate()
+	res = syntheticObservationalData(d, m, n)
+	#S = readDate()
 
 	max_depth = 3
 	min_leaf_number = 0
 	# create the personalization tree
-	pt = tree.personalizationTree(S, [], max_depth, min_leaf_number, doMatching)
+	pt = tree.personalizationTree(res[0], res[1], max_depth, min_leaf_number, doMatching)
 
-	print('the personalization tree is: ')
-	printInorder(pt.root)
+	#print('the personalization tree is: ')
+	#printInorder(pt.root)
 
 	value = pt.policyEvaluation(pt.policy)
 	print('value: ', value)
+
+
+
+
+
 #---------------------------------------------------------------------------------------------------	
 if __name__ == "__main__":
 	main_synthetic()
