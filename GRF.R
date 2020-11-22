@@ -3,7 +3,8 @@ rm(list=ls())
 library(tidyr)
 library(grf)
 library(ggplot2)
-
+library("DiagrammeRsvg")
+library("DiagrammeR")
 
 n = 1000
 d = 10
@@ -12,7 +13,7 @@ splitVal = 0.5
 synthetic = TRUE
 finalVal <- c()
 #########################  generate data #########################  
-for(n in c(400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000)) 
+for(n in c(400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000)) #400, 600, 800, 1000, 1200, 1400, 1600, 1800, 
 { 
   val = c()
   for(run in seq(0, 25, 1))
@@ -107,9 +108,10 @@ for(n in c(400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000))
     YObsTrain = YObs[r >= splitVal,]
     YObsTest = YObs[r < splitVal,]
     ################# learn the causal forest #####################
-    tau.forest <- causal_forest(as.matrix(XTrain), as.vector(YObsTrain), as.vector(WTrain))
+    tau.forest <- causal_forest(as.matrix(XTrain), as.vector(YObsTrain), as.vector(WTrain), num.trees = 1)
     ########################### predict ############################
     c.pred <- predict(tau.forest, XTest)
+    plot(tree <- get_tree(tau.forest, 1))
     ######################### evaluate policy ######################
     pValue = matrix(NA, nrow = nrow(XTest), ncol = 1)
     pValue[c.pred >= 0] = YTest[c.pred >= 0,'y0']

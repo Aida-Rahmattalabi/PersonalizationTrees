@@ -92,8 +92,9 @@ class personalizationTree():
 			IStar = math.inf													# line 4 of the pseudo code
 			lStar = 0															# line 4 of the pseudo code
 			jStar = 0															# line 4 of the pseudo code
-			cuts = [0 for c in range(self.d)]#list(np.random.randint(0, self.d, self.candidateCuts))		# line 5 of the pseudo code
+			cuts = s#list(np.random.randint(0, self.d, self.candidateCuts))		# line 5 of the pseudo code
 			for l in cuts:  # feature 
+
 				# sort X along l-th feature 
 				S = sorted(S, key=lambda axis:axis[l], reverse=False)
 				S = np.array(S)
@@ -145,7 +146,6 @@ class personalizationTree():
 						IStar = I
 						lStar = l
 						jStar = j
-
 
 			if IStar < math.inf:
 				S = sorted(S, key=lambda axis:axis[lStar], reverse=False)
