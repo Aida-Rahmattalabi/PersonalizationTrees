@@ -9,6 +9,9 @@ import random
 import numpy as np
 import time
 import math
+from statistics import stdev 
+from statistics import mean 
+
 
 import util
 #---------------------------------------------------------------------------------------------------	
@@ -82,8 +85,8 @@ def syntheticObservationalData(d, m, n):
 	# split train and test data
 	r = np.random.rand(S.shape[0])
 
-	Train = S[r<0.9, :]
-	Test = SFull[r>=0.9, :]
+	Train = S[r<0.5, :]
+	Test = SFull[r>=0.5, :]
 
 	return [Train, Test]
 #---------------------------------------------------------------------------------------------------	
@@ -156,35 +159,59 @@ def baseline(Train, Test, methods):
 			pass
 	return value
 #---------------------------------------------------------------------------------------------------	
-def main_synthetic():
-	d = 10
-	n = 5000
-	m = 2
-	doMatching = False
-	treeNum = 50
-	res = syntheticObservationalData(d, m, n)
+def main_synthetic(runs):
 
-	Train = res[0]
-	Test = res[1]
+	baseAlgorithms = ['RC-RF', 'RC-LinReg']
 
-	max_depth = 10
-	min_leaf_number = 20
-	# create the personalization tree
-	pt = util.personalizationTree(Train, Test, max_depth, min_leaf_number, doMatching)
+	baseVals = [[0 for i in range(len(baseAlgorithms))] for j in range(runs)]
+	persTreeVals = [0 for i in range(runs)]
+	persForestVals = [0 for i in range(runs)]
 
-	#print('the personalization tree is: ')
-	#printInorder(pt.root)
+	# save results to file
+	f = open('results.csv', 'w')
+	f.write('n, value, std, method \n')
 
-	value = pt.policyEvaluation()
-	print('Personalization Tree value: ', value)
+	for n in [400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000]:
+		for run in range(runs):
+			d = 10
+			#n = 1000
+			m = 2
+			doMatching = False
+			treeNum = 25
+			res = syntheticObservationalData(d, m, n)
+
+			Train = res[0]
+			Test = res[1]
+
+			max_depth = 5
+			min_leaf_number = 0
+			# create the personalization tree
+			pt = util.personalizationTree(Train, Test, max_depth, min_leaf_number, doMatching)
+
+			#print('the personalization tree is: ')
+			#printInorder(pt.root)
+
+			value = pt.policyEvaluation()
+			print('Personalization Tree value: ', value)
+			persTreeVals[run] = value
+
+			pf = util.personalizationForest(Train, Test, max_depth, min_leaf_number, treeNum, doMatching)
+			value = pf.policyEvaluation()
+			print('Personalization Forest value: ', value)
+			persForestVals[run] = value
 
 
-	pf = util.personalizationForest(Train, Test, max_depth, min_leaf_number, treeNum, doMatching)
-	value = pf.policyEvaluation()
-	print('Personalization Forest value: ', value)
+			value_base = baseline(Train, Test, baseAlgorithms)
+			print('baseline values (RF, Linear Regression): ', value_base)
+			for i in range(len(value_base)):
+				baseVals[run][i] = value_base[i] 
+		
+		print('here')
+		f.write(str(n)+','+str(mean(persTreeVals))+','+str(stdev(persTreeVals))+','+'persTree'+'\n')
+		f.write(str(n)+','+str(mean(persForestVals))+','+str(stdev(persForestVals))+','+'persForest'+'\n')
+		f.write(str(n)+','+str(mean(baseVals[0]))+','+str(stdev(baseVals[0]))+','+'RF'+'\n')
+		f.write(str(n)+','+str(mean(baseVals[1]))+','+str(stdev(baseVals[1]))+','+'linReg'+'\n')
 
-	value_base = baseline(Train, Test, ['CF']) #['RC-RF', 'RC-LinReg']
-	print('Random Forest value: ', value_base)
 #---------------------------------------------------------------------------------------------------	
 def main_real():
 	d = 10
@@ -207,11 +234,13 @@ def main_real():
 	print('value: ', value)
 
 
-
+	value_base = baseline(Train, Test, ['RC-RF', 'RC-LinReg'])
+	print('baseline values (RF, Linear Regression): ', value_base)
+	
 
 
 #---------------------------------------------------------------------------------------------------	
 if __name__ == "__main__":
-	main_synthetic()
+	main_synthetic(25)
 
 
