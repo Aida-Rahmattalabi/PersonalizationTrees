@@ -92,7 +92,7 @@ class personalizationTree():
 			IStar = math.inf													# line 4 of the pseudo code
 			lStar = 0															# line 4 of the pseudo code
 			jStar = 0															# line 4 of the pseudo code
-			cuts = s#list(np.random.randint(0, self.d, self.candidateCuts))		# line 5 of the pseudo code
+			cuts = [0 for c in range(self.d)]#list(np.random.randint(0, self.d, self.candidateCuts))		# line 5 of the pseudo code
 			for l in cuts:  # feature 
 
 				# sort X along l-th feature 
@@ -224,7 +224,7 @@ class personalizationTree():
 
 		return [Train, Test]
 	#-----------------------------------------------------------------------------------------------
-	def policyEvaluation(self):
+	def policyEvaluation(self, byType):
 		# policy value
 		val = 0
 		for i in range(len(self.Test)):
@@ -238,7 +238,27 @@ class personalizationTree():
 			# evaluate the action
 			val += self.Test[i,self.d + p]
 
-		return val/len(self.Test)
+		if(byType): 
+		# if TRUE, it will return the policy value w.r.t different level of the 7th feature 
+		# (taken as the protected feature)
+			valbyType = [0,0]
+			count = [0,0]
+			for i in range(len(self.Test)):
+
+				# find the covariate vector
+				x = self.Test[i,0:self.d]
+				
+				# find the action proposed by policy f
+				p = self.treeTraversal(self.root, x)
+
+				# evaluate the action
+				valbyType[x[7]] += self.Test[i,self.d + p]
+				count[x[7]] += 1
+
+		valbyType[0] = valbyType[0]/count[0] 
+		valbyType[1] = valbyType[1]/count[1] 
+		print('tree by type: ', valbyType)
+		return val/len(self.Test), valbyType
 #--------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------
@@ -251,9 +271,11 @@ class personalizationForest():
 		self.treeNum = treeNum
 		self.doMatching = doMatching
 
-	def policyEvaluation(self):
+	def policyEvaluation(self, byType):
 		value = 0
 		treeModels = []
+		valbyType = [0,0]
+		count = [0,0]
 
 		for i in range(self.treeNum):
 			# randomly sample training data
@@ -274,7 +296,15 @@ class personalizationForest():
 			p = max(set(zhat), key=zhat.count)
 			value += self.Test[j, len(x) + p]/len(self.Test)
 
+			if(byType): 
+			# if TRUE, it will return the policy value w.r.t different level of the 7th feature 
+			# (taken as the protected feature)
+				valbyType[x[7]] += self.Test[j, len(x) + p]
+				count[x[7]] += 1
 
+		valbyType[0] = valbyType[0]/count[0] 
+		valbyType[1] = valbyType[1]/count[1] 
+		print('forest by type: ', valbyType)
 
-		return value
+		return value, valbyType
 

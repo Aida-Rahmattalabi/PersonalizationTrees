@@ -45,7 +45,7 @@ def syntheticObservationalData(d, m, n):
 			return -5
 
 	def baseline2(x):
-		return 0
+		return x[0] + x[2] + x[4] + x[6] + x[7] + x[8] - 2
 
 	def effect2(x):
 		if(x[0] > 1 and x[2] > 0 and x[4] > 1 and x[6] > 0):
@@ -62,8 +62,8 @@ def syntheticObservationalData(d, m, n):
 	Y = np.array([[0.0 for i in range(m)] for j in range(n)], dtype = object)
 
 	for j in range(n):
-		Y[j][0] = baseline1(X[j]) + 0.5*effect1(X[j])
-		Y[j][1] = baseline1(X[j]) - 0.5*effect1(X[j])
+		Y[j][0] = baseline2(X[j]) + 0.5*effect2(X[j])
+		Y[j][1] = baseline2(X[j]) - 0.5*effect2(X[j])
 
 	#print('Y: ', Y)
 
@@ -106,8 +106,11 @@ def baseline(Train, Test, methods):
 	m = len(T)
 
 	value = [0 for a in methods]
+	valbyType = [[0 for a in methods] for i in range(2)]
+
 	for a in range(len(methods)):
 		if(methods[a] == 'RC-RF'): # regression and compare
+			count = [0, 0]
 			# random forest
 			RCModels = []
 			for i in range(m):
@@ -130,8 +133,19 @@ def baseline(Train, Test, methods):
 
 				p = np.argmin([yhat])
 				value[a] += Test[i, len(x) + p]/len(Test)
-		
+			
+				if(True): 
+				# if TRUE, it will return the policy value w.r.t different level of the 7th feature 
+				# (taken as the protected feature)
+					valbyType[x[7]][a] += Test[i, len(x) + p]
+					count[x[7]] += 1
+
+			valbyType[0][a] = valbyType[0][a]/count[0] 
+			valbyType[1][a] = valbyType[1][a]/count[1] 
+
+
 		if(methods[a] == 'RC-LinReg'): # regression and compare
+			count = [0, 0]
 			# random forest
 			RCModels = []
 			for i in range(m):
@@ -155,23 +169,43 @@ def baseline(Train, Test, methods):
 				p = np.argmin([yhat])
 				value[a] += Test[i, len(x) + p]/len(Test)
 
+				if(True): 
+				# if TRUE, it will return the policy value w.r.t different level of the 7th feature 
+				# (taken as the protected feature)
+					
+					valbyType[x[7]][a] += Test[i, len(x) + p]
+					count[x[7]] += 1
+
+			print('cousdasdasdat: ', count)
+			valbyType[0][a] = valbyType[0][a]/count[0] 
+			valbyType[1][a] = valbyType[1][a]/count[1] 
+
+
+
 		if(methods[a] == 'CF'):
 			pass
-	return value
+	return value, valbyType
 #---------------------------------------------------------------------------------------------------	
 def main_synthetic(runs):
 
 	baseAlgorithms = ['RC-RF', 'RC-LinReg']
 
-	baseVals = [[0 for i in range(len(baseAlgorithms))] for j in range(runs)]
+	baseVals = [[0 for j in range(runs)] for i in range(len(baseAlgorithms))] 
 	persTreeVals = [0 for i in range(runs)]
 	persForestVals = [0 for i in range(runs)]
 
+	baseValsbyType = [[[0 for j in range(runs)] for k in range(2)] for i in range(len(baseAlgorithms))]
+	persTreeValsbyType  = [[0 for i in range(runs)] for k in range(2)]
+	persForestValsbyType  = [[0 for i in range(runs)] for k in range(2)]
+
 	# save results to file
-	f = open('results.csv', 'w')
+	f = open('resultsx7baseline2.csv', 'w')
 	f.write('n, value, std, method \n')
 
-	for n in [400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000]:#[400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000]:
+	g = open('resultsbyTypex7baseline2.csv', 'w')
+	g.write('n, value1, value2, std1, std2, method \n')
+
+	for n in [2000]:#[400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000]:
 		for run in range(runs):
 			d = 10
 			#n = 1000
@@ -188,58 +222,51 @@ def main_synthetic(runs):
 			# create the personalization tree
 			pt = util.personalizationTree(Train, Test, max_depth, min_leaf_number, doMatching)
 
-			print('the personalization tree is: ')
-			printInorder(pt.root)
+			#print('the personalization tree is: ')
+			#printInorder(pt.root)
 
-			value = pt.policyEvaluation()
+			res = pt.policyEvaluation(True)
+			value = res[0]
+			valbyType = res[1]
+
 			print('Personalization Tree value: ', value)
 			persTreeVals[run] = value
+			persTreeValsbyType[0][run] = valbyType[0]
+			persTreeValsbyType[1][run] = valbyType[1]
 
 			pf = util.personalizationForest(Train, Test, max_depth, min_leaf_number, treeNum, doMatching)
-			value = pf.policyEvaluation()
+			res = pf.policyEvaluation(True)
+			value = res[0]
+			valbyType = res[1]
+
 			print('Personalization Forest value: ', value)
 			persForestVals[run] = value
+			persForestValsbyType[0][run] = valbyType[0]
+			persForestValsbyType[1][run] = valbyType[1]
 
-
-			value_base = baseline(Train, Test, baseAlgorithms)
+			res = baseline(Train, Test, baseAlgorithms)
+			value_base = res[0]
+			value_basebyType = res[1]
+			print('hereree', value_base, value_basebyType)
 			print('baseline values (RF, Linear Regression): ', value_base)
 			for i in range(len(value_base)):
-				baseVals[run][i] = value_base[i] 
-		
+				baseVals[i][run] = value_base[i] 
+				baseValsbyType[i][0][run] = value_basebyType[0][i]
+				baseValsbyType[i][1][run] = value_basebyType[1][i]
+
 		f.write(str(n)+','+str(mean(persTreeVals))+','+str(stdev(persTreeVals))+','+'persTree'+'\n')
 		f.write(str(n)+','+str(mean(persForestVals))+','+str(stdev(persForestVals))+','+'persForest'+'\n')
 		f.write(str(n)+','+str(mean(baseVals[0]))+','+str(stdev(baseVals[0]))+','+'RF'+'\n')
 		f.write(str(n)+','+str(mean(baseVals[1]))+','+str(stdev(baseVals[1]))+','+'linReg'+'\n')
 
-#---------------------------------------------------------------------------------------------------	
-def main_real():
-	d = 10
-	n = 1000
-	m = 2
-	doMatching = True
-	
-	res = syntheticObservationalData(d, m, n)
-	#S = readDate()
-
-	max_depth = 4
-	min_leaf_number = 5
-	# create the personalization tree
-	pt = tree.personalizationTree(res[0], res[1], max_depth, min_leaf_number, doMatching)
-
-	#print('the personalization tree is: ')
-	#printInorder(pt.root)
-
-	value = pt.policyEvaluation(pt.policy)
-	print('value: ', value)
+		g.write(str(n)+','+str(mean(persTreeValsbyType[0]))+','+str(mean(persTreeValsbyType[1]))+','+str(stdev(persTreeValsbyType[0]))+','+str(stdev(persTreeValsbyType[1]))+','+'persTree'+'\n')
+		g.write(str(n)+','+str(mean(persForestValsbyType[0]))+','+str(mean(persForestValsbyType[1]))+','+str(stdev(persForestValsbyType[0]))+','+str(stdev(persForestValsbyType[1]))+','+'persForest'+'\n')
+		g.write(str(n)+','+str(mean(baseValsbyType[0][0]))+','+str(mean(baseValsbyType[0][1]))+','+str(stdev(baseValsbyType[0][0]))+','+str(stdev(baseValsbyType[0][1]))+','+'RF'+'\n')
+		g.write(str(n)+','+str(mean(baseValsbyType[1][0]))+','+str(mean(baseValsbyType[1][1]))+','+str(stdev(baseValsbyType[1][0]))+','+str(stdev(baseValsbyType[1][1]))+','+'linReg'+'\n')
 
 
-	value_base = baseline(Train, Test, ['RC-RF', 'RC-LinReg'])
-	print('baseline values (RF, Linear Regression): ', value_base)
-	
 
-
-#---------------------------------------------------------------------------------------------------	
 if __name__ == "__main__":
-	main_synthetic(25)
+	main_synthetic(20)
 
 
